@@ -4,42 +4,36 @@ main();
 async function main() {
 	const subredditData = await getSubredditData();
 	const uniqueAuthors = getSubredditAuthors(subredditData);
-	const userPosts = await getUserPosts(uniqueAuthors);
-	const userSubreddits = await getPostSubreddits(userPosts); // i dont think i need await here
-	console.log("user posts", userSubreddits);
+	const userPosts = await getUserActivity(uniqueAuthors);
+	const data = {
+		items: [
+			{
+				id: 1,
+				name: "foo",
+			},
+			{
+				id: 2,
+				name: "bar",
+			},
+		],
+	};
+
+	console.log("data", data);
+	console.log(userPosts);
+	// const userSubreddits = await getPostSubreddits(userPosts); // i dont think i need await here
+	console.log("user posts index", userPosts[0]);
 }
 
-function getPostSubreddits(userPosts) {
-	// Description:    Extracts the subreddit name from each post and returns an array of unique subreddits
+function createDataObject() {
+	let postdata = {
+		data: [],
+	};
 
-	// Parameter:      userPosts - object containing the user and their posts
-
-	// Returns:        Array(?) of unique subreddits
-	console.log("FUNCTION WORKY", userPosts.userPosts);
-	const subreddits = userPosts.userPosts.map((post) => post.posts);
-	console.log(subreddits);
-	// This foreach function will loop through each post of a user and get the subreddit name for each post
-	// ! Not working with the new object i made. hm. its working in foreach.js but with the object i created in foreach.js it doesnt work. maybe just use a regular old array of objects instead, with no name for the object
-	userPosts.userPosts.forEach(function (user) {
-		console.log(user.posts);
-		const subreddits = userPosts.userPosts.map((post) => post.data.subreddit);
-		console.log("SUBREDDITS", subreddits);
-		//---
-		// Use set to elimate duplicates, then convert back to an array
-		// const uniqueSubreddits = Array.from([...new Set(subreddits)]);
-		// console.log(`user: ${user}, subreddits: ${uniqueSubreddits}`);
-		// const userSubredditsObj = {
-		// 	user: user,
-		// 	postSubreddits: uniqueSubreddits,
-		// };
-		//----
-		// console.log(userSubredditsObj);
-		// userPosts.forEach((post) => {
-		// 	console.log(post.data.subreddit);
-		//     const subreddit = post.data.subreddit;
-		// 	const uniqueAuthors = Array.from([...new Set(authors)]);
-		// });
+	let userPostsObj = new Object({
+		user: user,
+		posts: JSON.stringify(userData.data.children),
 	});
+	postdata.data.push(userPostsObj);
 }
 
 function getSubredditAuthors(data) {
@@ -56,13 +50,13 @@ async function getSubredditData() {
 		.catch((error) => {
 			console.error("Error:", error);
 		});
-	console.log(data);
+	// console.log(data);
 
 	return data;
 }
 
 // (?) Does this function need to be async? does the foreach need to be async?
-async function getUserPosts(uniqueAuthors) {
+async function getUserActivity(uniqueAuthors) {
 	//      Description:    Fetch's user data and extracts the posts. Then creates a new
 	//                      object containing the username and their posts, and returns it.
 
@@ -70,36 +64,70 @@ async function getUserPosts(uniqueAuthors) {
 
 	//      Returns:         Sends back an object containing the user and their posts
 
-	// !IMPORTANT Make sure to only get subreddits where the user has posted, not comments. another function will handle comments
-	// loop through uniqueauthors (foeach)
-	// on each iteration, fetch the user's subreddits
-	// store the subreddits in an array/object
-	// const userPostsData = uniqueAuthors.forEach(myFunction);
-	// const subreddits = uniqueAuthors.map((author) => {
-	// 	fetch(`https://www.reddit.com/user/${author}.json`)
-	// 		.then((response) => response.json())
-	// 		.then(console.log(author));
-	// });
-
-	// {
-	//     "user": "purple",
-	//     "subreddits": [],
-	// }
+	// !IMPORTANT Make sure to only get subreddits where the user has posted, not comments. another function will handle comments (f1/f3)
 
 	// For each post's author in the target subreddit, go to their profile and get their posts and extract the names of each subreddit they've posted in
 	// !IMPORTANT Make sure to only get subreddits where the user has posted, not comments. another function will handle comments
 	// !IMPORTANT Remember to put .CATCH statements in each fetch request!!
-	const userPosts = { userPosts: [] };
-	uniqueAuthors.forEach(async function (user) {
-		const userData = await fetch(
-			`https://www.reddit.com/user/${user}.json`
-		).then((response) => response.json());
-		// Create an object with the data we want
-		const userPostsObj = { user: user, posts: userData.data.children };
-		userPosts.userPosts.push(userPostsObj);
-	});
 
-	return userPosts;
+	let testing = [];
+
+	const allAsyncResults = [];
+
+	for (const item of uniqueAuthors) {
+		const asyncResult = await fetch(
+			`https://www.reddit.com/user/${item}.json`
+		).then((response) => response.json());
+		allAsyncResults.push({
+			user: item,
+			userActivity: asyncResult.data.children,
+		});
+	}
+
+	return allAsyncResults;
+}
+
+async function getPostSubreddits(userPosts) {
+	// Description:    Extracts the subreddit name from each post and returns an array of unique subreddits
+
+	// Parameter:      userPosts - object containing the user and their posts
+
+	// Returns:        Array(?) of unique subreddits
+	console.log("FUNCTION WORKY", userPosts);
+
+	// const getSubreddits = (item) => console.log(item);
+	// const subreddits = userPosts.map(getSubreddits);
+
+	// console.log("subreddits:", subreddits);
+	const test = [];
+	userPosts.forEach((element) => {
+		let posts = element.posts;
+		console.log(posts);
+	});
+	// console.log("test", test);
+	// This foreach function will loop through each post of a user and get the subreddit name for each post
+	// ! Not working with the new object i made. hm. its working in foreach.js but with the object i created in foreach.js it doesnt work. maybe just use a regular old array of objects instead, with no name for the object
+
+	// userPosts.forEach(function (i) {
+	// 	console.log(i);
+	// 	const subreddits = userPosts.userPosts.map((post) => post.data.subreddit);
+	// 	console.log("SUBREDDITS", subreddits);
+	// 	//---
+	// 	// Use set to elimate duplicates, then convert back to an array
+	// 	// const uniqueSubreddits = Array.from([...new Set(subreddits)]);
+	// 	// console.log(`user: ${user}, subreddits: ${uniqueSubreddits}`);
+	// 	// const userSubredditsObj = {
+	// 	// 	user: user,
+	// 	// 	postSubreddits: uniqueSubreddits,
+	// 	// };
+	// 	//----
+	// 	// console.log(userSubredditsObj);
+	// 	// userPosts.forEach((post) => {
+	// 	// 	console.log(post.data.subreddit);
+	// 	//     const subreddit = post.data.subreddit;
+	// 	// 	const uniqueAuthors = Array.from([...new Set(authors)]);
+	// 	// });
+	// });
 }
 
 // .then((data) => {
