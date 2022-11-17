@@ -1,77 +1,76 @@
 const feedDisplay = document.querySelector("#feed");
 
-// fetch("http://localhost:8000/results")
-// 	.then((response) => {
-// 		return response.json();
-// 	})
-// 	.then((data) => {
-// 		data.forEach((post) => {
-// 			const postItem =
-// 				`<div><h3>` + post.title + `</h3><p>` + post.url + `</p></div>`;
-// 			feedDisplay.insertAdjacentHTML("beforeend", postItem);
-// 		});
-// 	})
-// 	.catch((err) => console.log(err));
+main();
+async function main() {
+	const subredditData = await getSubredditData();
+	const uniqueAuthors = getSubredditAuthors(subredditData);
+	const userPosts = await getUserPosts(uniqueAuthors);
+	const userSubreddits = await getPostSubreddits(userPosts); // i dont think i need await here
+	console.log("user posts", userSubreddits);
+}
 
-// fetch("https://www.reddit.com/r/ProgrammerHumor.json")
-// 	.then((response) => response.json())
-// 	.then((data) => {
-// 		console.log(data.data.children);
-// 		data.data.children.forEach((post) => {
-// 			const upvotes = post.data.ups;
-// 			const width = upvotes / 1000;
-// 			console.log(post.data.ups);
-// 			const postItem = `<div>
-//                                     <h3>${post.data.title}</h3>
-//                                     <img src="${post.data.url}" width="auto" height="auto">
-//                                     <br>
-//                                     <p>Upvotes: ${post.data.ups}</p>
-//                                 </div>`;
-// 			feedDisplay.insertAdjacentHTML("beforeend", postItem);
-// 		});
-// 	});
+function getPostSubreddits(userPosts) {
+	// Description:    Extracts the subreddit name from each post and returns an array of unique subreddits
 
-getData();
+	// Parameter:      userPosts - object containing the user and their posts
 
-async function getData() {
+	// Returns:        Array(?) of unique subreddits
+	console.log("FUNCTION WORKY", userPosts.userPosts);
+	const subreddits = userPosts.userPosts.map((post) => post.posts);
+	console.log(subreddits);
+	// This foreach function will loop through each post of a user and get the subreddit name for each post
+	// ! Not working with the new object i made. hm. its working in foreach.js but with the object i created in foreach.js it doesnt work. maybe just use a regular old array of objects instead, with no name for the object
+	userPosts.userPosts.forEach(function (user) {
+		console.log(user.posts);
+		const subreddits = userPosts.userPosts.map((post) => post.data.subreddit);
+		console.log("SUBREDDITS", subreddits);
+		//---
+		// Use set to elimate duplicates, then convert back to an array
+		// const uniqueSubreddits = Array.from([...new Set(subreddits)]);
+		// console.log(`user: ${user}, subreddits: ${uniqueSubreddits}`);
+		// const userSubredditsObj = {
+		// 	user: user,
+		// 	postSubreddits: uniqueSubreddits,
+		// };
+		//----
+		// console.log(userSubredditsObj);
+		// userPosts.forEach((post) => {
+		// 	console.log(post.data.subreddit);
+		//     const subreddit = post.data.subreddit;
+		// 	const uniqueAuthors = Array.from([...new Set(authors)]);
+		// });
+	});
+}
+
+function getSubredditAuthors(data) {
+	const authors = data.data.children.map((post) => post.data.author);
+	// Only get unique authors
+	const uniqueAuthors = Array.from([...new Set(authors)]);
+	console.log("unique authors", uniqueAuthors);
+	return uniqueAuthors;
+}
+
+async function getSubredditData() {
 	const data = await fetch("https://www.reddit.com/r/ProgrammerHumor.json")
 		.then((response) => response.json())
 		.catch((error) => {
 			console.error("Error:", error);
 		});
 	console.log(data);
-	// const test = data.data.children.forEach((post) => {
-	// 	console.log("post", post);
-	// 	const author = post.data.author;
-	// 	authors.push(author);
-	// 	console.log("author array: " + authors);
-	// 	const title = post.data.title;
-	// 	const url = post.data.url;
-	// 	console.log(post.data.author);
-	// 	const postItem = `<div>
-	//                                         <p>Author: ${author}</p>
-	//                                     </div>`;
-	// 	feedDisplay.insertAdjacentHTML("beforeend", postItem);
-	// });
 
-	const authors = data.data.children.map((post) => post.data.author);
-	// Only get unique authors
-	const uniqueAuthors = Array.from([...new Set(authors)]);
-	console.log("authors", authors);
-	console.log("unique authors", uniqueAuthors);
-	getUserPosts(uniqueAuthors);
+	return data;
 }
-// async function myFunction(item) {
-// 	const userPosts = await fetch(
-
-// 		`https://www.reddit.com/user/${item}.json`
-// 	).then((response) => response.json());
-// 	console.log("user posts", userPosts);
-// 	return userPosts;
-// }
 
 // (?) Does this function need to be async? does the foreach need to be async?
 async function getUserPosts(uniqueAuthors) {
+	//      Description:    Fetch's user data and extracts the posts. Then creates a new
+	//                      object containing the username and their posts, and returns it.
+
+	//      Parameter:      uniqueAuthors - array of unique authors
+
+	//      Returns:         Sends back an object containing the user and their posts
+
+	// !IMPORTANT Make sure to only get subreddits where the user has posted, not comments. another function will handle comments
 	// loop through uniqueauthors (foeach)
 	// on each iteration, fetch the user's subreddits
 	// store the subreddits in an array/object
@@ -87,58 +86,20 @@ async function getUserPosts(uniqueAuthors) {
 	//     "subreddits": [],
 	// }
 
-	// For each post's author in the target subreddit, go to their profile and get the names of each subreddit they've posted in
-
+	// For each post's author in the target subreddit, go to their profile and get their posts and extract the names of each subreddit they've posted in
+	// !IMPORTANT Make sure to only get subreddits where the user has posted, not comments. another function will handle comments
+	// !IMPORTANT Remember to put .CATCH statements in each fetch request!!
+	const userPosts = { userPosts: [] };
 	uniqueAuthors.forEach(async function (user) {
-		const userPostsData = await fetch(
+		const userData = await fetch(
 			`https://www.reddit.com/user/${user}.json`
 		).then((response) => response.json());
-
-		console.log(user);
-		// Console log just the posts
-		console.log(userPostsData.data.children);
-		const userPosts = userPostsData.data.children;
-		// This foreach function will loop through each post of a user and get the subreddit name for each post
-		const subreddits = userPostsData.data.children.map(
-			(post) => post.data.subreddit
-		);
-
-		// Use set to elimate duplicates, then convert back to an array
-		const uniqueSubreddits = Array.from([...new Set(subreddits)]);
-		console.log(`user: ${user}, subreddits: ${uniqueSubreddits}`);
-		const userSubredditsObj = {
-			user: user,
-			postSubreddits: uniqueSubreddits,
-		};
-		console.log(userSubredditsObj);
-		// userPosts.forEach((post) => {
-		// 	console.log(post.data.subreddit);
-		//     const subreddit = post.data.subreddit;
-		// 	const uniqueAuthors = Array.from([...new Set(authors)]);
-		// });
+		// Create an object with the data we want
+		const userPostsObj = { user: user, posts: userData.data.children };
+		userPosts.userPosts.push(userPostsObj);
 	});
 
-	// for(var i=0; i<years.length; i++) {
-	//     df.appendChild(createYearOption(years[i]));
-	//   }
-	// const userPostsData = await fetch(
-	// 	"https://www.reddit.com/user/FEMsleep.json"
-	// ).then((response) => response.json());
-
-	// const userPosts = userPostsData.data.children.map((post) => post.data.author);
-	// const userPosts = userPostsData.data.children.map(
-	// 	(post) => post.data.subreddit
-	// );
-
-	// const userPostsData = uniqueAuthors.forEach((author) => {
-	// 	fetch(`https://www.reddit.com/user/${author}.json`).then((response) =>
-	//     response.json()
-	// );
-
-	// const userSubreddits = await fetch(
-	// 	"https://www.reddit.com/user/username/submitted.json"
-	// ).then((response) => response.json());
-	console.log("user posts", subreddits);
+	return userPosts;
 }
 
 // .then((data) => {
