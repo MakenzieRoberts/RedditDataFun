@@ -2,13 +2,31 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
-		<link rel="stylesheet" href="./style.css" />
+		<title>💭 Bubble chart with D3.js</title>
+
+		<link rel="stylesheet" href="./bubble-chart/styles.css" />
 	</head>
 	<body>
-		<div id="feed"></div>
-		<script src="./script.js"></script>
+		<div id="loader" style="display: none">
+			<!-- Loading animation credit: https://loading.io/css/ -->
+			<div class="lds-ring">
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+		</div>
+		<svg id="bubble-chart"></svg>
+		<div class="tooltip">
+			<img alt="" />
+			<div>
+				<a></a>
+				<span></span>
+			</div>
+		</div>
+		<script type="module" src="./script.js"></script>
+		<script src="https://d3js.org/d3.v6.js"></script>
+		<!-- <script type="module" src="./bubble-chart/bubble.js"></script> -->
 	</body>
 </html>

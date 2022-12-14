@@ -1,6 +1,124 @@
 // const feedDisplay = document.querySelector("#feed");
 
-main();
+// main();
+// const fetchButton = document.querySelector("#fetchButton");
+const loader = document.querySelector("#loader");
+const content = document.querySelector("#bubble-chart");
+addEventListener("DOMContentLoaded", async (event) => {
+	// fetchButton.onclick = async function () {
+	console.log(loader);
+	// content.innerHTML = "";
+
+	// Your loader styling, mine is just text that I display and hide
+	loader.style.display = "block";
+	const nextContent = await fetchData();
+	loader.style.display = "none";
+
+	// content.innerHTML = nextContent;
+});
+
+// Write a new promise
+
+function fetchData() {
+	return new Promise(async (resolve) => {
+		await bubbleChart();
+		resolve();
+	});
+}
+
+// bubbleChart();
+async function bubbleChart() {
+	let myData = await main();
+
+	let data = myData;
+
+	// const file = cat;
+	const width = window.innerWidth;
+	const height = window.innerHeight;
+	const colors = {
+		html: "#F16529",
+		css: "#1C88C7",
+		js: "#FCC700",
+		"": "rgb(0, 178, 133)",
+	};
+
+	const generateChart = (data) => {
+		const bubble = (data) =>
+			d3.pack().size([width, height]).padding(2)(
+				d3.hierarchy({ children: data }).sum((d) => (d.score / 2) * 5)
+			);
+
+		const svg = d3
+			.select("#bubble-chart")
+			.style("width", width)
+			.style("height", height);
+
+		const root = bubble(data);
+		const tooltip = d3.select(".tooltip");
+
+		const node = svg
+			.selectAll()
+			.data(root.children)
+			.enter()
+			.append("g")
+			.attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+		const circle = node
+			.append("circle")
+			.style("fill", (d) => colors[d.data.category])
+			.on("mouseover", function (e, d) {
+				tooltip.select("img").attr("src", d.data.img);
+				tooltip
+					.select("a")
+					.attr("href", "https://www.reddit.com/r/" + d.data.name)
+					.text(d.data.name);
+				tooltip
+					.select("span")
+					.attr("class", d.data.category)
+					.text(d.data.category);
+				tooltip.style("visibility", "visible");
+
+				d3.select(this).style("stroke", "#222");
+			})
+			.on("mousemove", (e) =>
+				tooltip.style("top", `${e.pageY}px`).style("left", `${e.pageX + 10}px`)
+			)
+			.on("mouseout", function () {
+				d3.select(this).style("stroke", "none");
+				return tooltip.style("visibility", "hidden");
+			})
+			.on("click", (e, d) =>
+				window.open("https://www.reddit.com/r/" + d.data.name)
+			);
+
+		const label = node
+			.append("text")
+			.attr("dy", 2)
+			.text((d) => d.data.name);
+
+		node
+			.transition()
+			.ease(d3.easeExpInOut)
+			.duration(1000)
+			.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
+
+		circle
+			.transition()
+			.ease(d3.easeExpInOut)
+			.duration(1000)
+			.attr("r", (d) => d.r);
+
+		label
+			.transition()
+			.delay(700)
+			.ease(d3.easeExpInOut)
+			.duration(1000)
+			.style("opacity", 1);
+	};
+
+	generateChart(data);
+}
+
 async function main() {
 	const subredditData = await getSubredditData();
 	const uniqueAuthors = getSubredditAuthors(subredditData);
@@ -10,8 +128,12 @@ async function main() {
 
 	// {subreddit: "subreddit", username: "username", type: "type" }
 	const formattedActivity = formatUserActivity(userActivity);
-	let dupesRemoved = removeDuplicates(formattedActivity);
+	const dupesRemoved = removeDuplicates(formattedActivity);
 	console.log("calling dupesRemoved: ", dupesRemoved);
+	const dataPoints = formatDataPoint(dupesRemoved);
+	return dataPoints;
+	// module.exports = { dataPoints };
+	//---
 	// const userSubredditsCount = countUserSubreddits(userSubreddits);
 	// console.log(userSubredditsCount);
 	//
@@ -109,23 +231,6 @@ function formatUserActivity(userActivity) {
 			};
 			userSubreddits.push(dataObj);
 		});
-		/* ***************************** vvv old map vvv **************************** */
-		// let dataObj = subredditData.map((post) => {
-		// 	return {
-		// 		subreddit: post.data.subreddit,
-		// 		data: {
-		// 			username: user,
-		// 			type: post.kind,
-		// 		},
-		// 	};
-		// });
-		/* ***************************** ^^^ old map ^^^ **************************** */
-		// Remove duplicates (I'm not interested in how much they've posted in each subreddit at this time, I just want to find out which subreddits they've posted in)
-		// console.log("subredditData (After nsfw removal): ", dataObj);
-		// I'm going to get rid of duplicates later... I may want to know how many times they've posted in each subreddit later. The more data
-		// subreddits = Array.from([...new Set(subreddits)]);
-		// let userSubredditsObj = { user: user, data: dataObj };
-		// userSubreddits.push(dataObj);
 	});
 	console.log("user subreddits", userSubreddits);
 
@@ -133,6 +238,8 @@ function formatUserActivity(userActivity) {
 }
 
 function removeDuplicates(arr) {
+	// Remove duplicates (I'm not interested in how much they've posted in each subreddit at this time, I just want to find out which subreddits they've posted/commented in)
+
 	// !IDEA: Later when counting I can individually count each comment/post and them add them together for the total. I can create a commentCount and postCount and use a simple if statement to add to each one depending on if type = t1/t3
 	// !REFERENCE: https://www.adamdehaven.com/blog/how-to-remove-duplicate-objects-from-a-javascript-array/#usage-example
 	/**
@@ -151,79 +258,81 @@ function removeDuplicates(arr) {
 	}
 
 	const unique = getUniqueArray(arr, ["subreddit", "username", "type"]);
-	//-------------
-	// 	const seen = new Set();
-	// const arr = [
-	//   { id: 1, name: "test1" },
-	//   { id: 2, name: "test2" },
-	//   { id: 2, name: "test3" },
-	//   { id: 3, name: "test4" },
-	//   { id: 4, name: "test5" },
-	//   { id: 5, name: "test6" },
-	//   { id: 5, name: "test7" },
-	//   { id: 6, name: "test8" }
-	// ];
-	// const filteredArr = arr.filter(elem => {
 
-	//   const duplicate = seen.has(elem.id);
-	//   seen.add(elem.id);
-	//   return !duplicate;
-	// });
-	// !REFERENCE: https://bobbyhadz.com/blog/javascript-remove-duplicates-from-array-of-objects#:~:text=To%20remove%20the%20duplicates%20from%20an%20array%20of%20objects%3A&text=Use%20the%20Array.,IDs%20in%20the%20new%20array.
-	// const arr = [
-	// 	{ id: 1, name: "Tom" },
-	// 	{ id: 1, name: "Tom" },
-	// 	{ id: 2, name: "Nick" },
-	// 	{ id: 2, name: "Nick" },
-	// ];
-	//----------------
-	// const uniqueIds = [];
-	// const unique = arr.filter((element) => {
-	// 	const isDuplicate = uniqueIds.includes({
-	// 		subreddit: element.subreddit,
-	// 		username: element.username,
-	// 		type: element.type,
-	// 	});
-	// 	if (!isDuplicate) {
-	// 		uniqueIds.push({
-	// 			subreddit: element.subreddit,
-	// 			username: element.username,
-	// 			type: element.type,
-	// 		});
-	// 		return true;
-	// 	}
-	// 	return false;
-	// });
-	// // 👇️ [{id: 1, name: 'Tom'}, {id: 2, name: 'Nick'}]
-	// console.log("unique", unique);
 	return unique;
 }
-/* ******************************* vvv OLD vvv ****************************** */
-// function getUserSubreddits(userActivity) {
-// 	// This function will get subreddits that user has posted/commented in. Later I'll make the function that filters out one or the other using the t1/t3 values
-// 	let userSubreddits = [];
-// 	userActivity.forEach((obj) => {
-// 		let user = obj.user;
-// 		// let filtered = removeNSFW(obj.rawUserActivity);
-// 		console.log("BEFORE NSFW REMOVAL:", obj);
 
-// 		// filter out data from nsfw subreddits
-// 		const subredditData = removeNSFW(obj);
+function formatDataPoint(dataArr) {
+	// !REFERENCE: https://stackoverflow.com/questions/5667888/counting-the-occurrences-frequency-of-array-elements
+	// Things i need to do
+	// 1. Count how many times each subreddit appears, (two counts 1 for comments 1 for posts) add them together and store that number in a variable
+	// 2. Each data point represents one subreddit.. so.. for every 'new' subreddit it comes across while iterating, it should check if a data point for it already exists and create a new one if it doesn't
 
-// 		let dataObj = subredditData.map((post) => {
-// 			return { subreddit: post.data.subreddit, type: post.kind };
-// 		});
-// 		// Remove duplicates (I'm not interested in how much they've posted in each subreddit at this time, I just want to find out which subreddits they've posted in)
-// 		console.log("subredditData (After nsfw removal): ", dataObj);
-// 		// I'm going to get rid of duplicates later... I may want to know how many times they've posted in each subreddit later. The more data
-// 		// subreddits = Array.from([...new Set(subreddits)]);
-// 		let userSubredditsObj = { user: user, data: dataObj };
-// 		userSubreddits.push(userSubredditsObj);
-// 	});
-// 	console.log("user subreddits", userSubreddits);
-// 	return userSubreddits;
-// }
-/* ******************************* ^^^ OLD ^^^ ****************************** */
+	// let link = "https://www.reddit.com/r/" + subreddit;
+	// let dataPointArray = [];
+	// let singleDataPoint = {
+	// 	name: subreddit,
+	// 	category: username,
+	// 	score: count,
+	// 	link: link,
+	// };
+
+	// const arr = [5, 5, 5, 2, 2, 2, 2, 2, 9, 4];
+
+	// t1 for comment
+	// t3 for post
+	//--- separate t1/t3
+	// let commentCounts = {};
+	// let postCounts = {};
+
+	// for (const num of dupesRemoved) {
+	// 	if (num.type === "t1") {
+	// 		commentCounts[num.subreddit] = commentCounts[num.subreddit]
+	// 			? commentCounts[num.subreddit] + 1
+	// 			: 1;
+	// 	} else if (num.type === "t3") {
+	// 		postCounts[num.subreddit] = postCounts[num.subreddit]
+	// 			? postCounts[num.subreddit] + 1
+	// 			: 1;
+	// 	}
+	// }
+	let counts = {};
+	for (const data of dataArr) {
+		counts[data.subreddit] = counts[data.subreddit]
+			? counts[data.subreddit] + 1
+			: 1;
+	}
+
+	let dataPoints = [];
+	// for (const property in object) {
+	// 	let singleDataPoint = {
+	// 		name: Object.keys(count),
+	// 		category: "",
+	// 		score: count[count],
+	// 	};
+	// 	dataPoints.push(singleDataPoint);
+	// }
+	// console.log("commentCounts", commentCounts);
+	// console.log("postCounts", postCounts);
+
+	// //--
+	// const object = { a: 1, b: 2, c: 3 };
+
+	for (const property in counts) {
+		let singleDataPoint = {
+			name: property,
+			category: "",
+			score: counts[property],
+		};
+		dataPoints.push(singleDataPoint);
+		// console.log(`${property}: ${object[property]}`);
+	}
+
+	console.log("counts", counts);
+	console.log("dataPoints", dataPoints);
+	return dataPoints;
+}
+
 function removeNSFW(obj) {
 	let filteredData = obj.rawUserActivity.filter(checkNSFW);
 
@@ -233,29 +342,7 @@ function removeNSFW(obj) {
 	}
 
 	return filteredData;
-
-	// let safeForWork = obj.rawUserActivity.map((post) => {
-	// 	// This if statement will filter out posts that are NFSW
-	// 	// Currently, this is only formatting the data. If a post is NSFW it will be undefined and removed below using filter(). I will make this more efficient later on, possibly using reduce()? But this works for now.
-	// 	if (post.data.over_18 === false) {
-	// 		return { subreddit: post.data.subreddit, type: post.kind };
-	// 	} else {
-	// 		console.log("NSFW POST FOUND: ", post.data.subreddit);
-	// 	}
-	// });
 }
-
-// function countUserSubreddits(userSubreddits) {
-// 	// This function will count how many times a subreddit name occurs in the userSubreddits array
-// 	let subCount = [{ name: "", number: "" }];
-// 	userSubreddits.forEach((dataset) => {
-// 		//iterate through each users subreddits and count how many times each subreddit occurs
-// 		// Needs to be completed before I can add to the object
-// 		dataset.count = subCount;
-// 		dataset.count.name = dataset.subreddits;
-// 	});
-// 	return userSubreddits;
-// }
 
 function createDataObject() {
 	let postdata = {
@@ -269,13 +356,14 @@ function createDataObject() {
 	postdata.data.push(userActivityObj);
 }
 
+/*
 async function getPostSubreddits(userActivity) {
 	// Description:    Extracts the subreddit name from each post and returns an array of unique subreddits
 
 	// Parameter:      userActivity - object containing the user and their posts
 
 	// Returns:        Array(?) of unique subreddits
-	console.log("FUNCTION WORKY", userActivity);
+	console.log("getPostSubreddits() userActivity: ", userActivity);
 
 	// const getSubreddits = (item) => console.log(item);
 	// const subreddits = userActivity.map(getSubreddits);
@@ -311,49 +399,22 @@ async function getPostSubreddits(userActivity) {
 	// 	// });
 	// });
 }
+*/
+// (async () => {
+// 	// bunch of irrelevant code here
 
-// .then((data) => {
-//     console.log(data.data.children);
-//     data.data.children.forEach((post) => {
-//         const author = post.data.author;
-//         authors.push(author);
-//         console.log("author array: " + authors);
-//         const title = post.data.title;
-//         const url = post.data.url;
-//         console.log(post.data.author);
-//         const postItem = `<div>
-//                                     <p>Author: ${author}</p>
-//                                 </div>`;
-//         feedDisplay.insertAdjacentHTML("beforeend", postItem);
-//     });
-// });
+// 	// gets all URLs, formatted & store in this variable
+// 	const dataPoints = formatDataPoint(dupesRemoved);
+// 	module.exports = { availableFormattedUrls };
+// })();
 
-// fetch("https://www.reddit.com/r/ProgrammerHumor.json")
-// 	.then((response) => response.json())
-// 	.then((data) => {
-// 		console.log(data.data.children);
-// 		data.data.children.forEach((post) => {
-// 			const author = post.data.author;
-// 			const title = post.data.title;
-// 			const url = post.data.url;
-// 			console.log(post.data.author);
-// 			const postItem = `<div>
-//                                     <p>Upvotes: ${author}</p>
-//                                 </div>`;
-// 			feedDisplay.insertAdjacentHTML("beforeend", postItem);
-// 		});
-// 	});
+// // module.exports = (async () => {
+// // 	return dataPoints;
+// // })();
+// // export default async () => {
+// // 	return await main();
+// // };
 
-// https://www.reddit.com/user/lurker4memes.json
+// export default = { main };
 
-// // We have to get chips after we get fish...
-// async getFishAndChips() {
-//     const fish = await fetch(this.fishApiUrl).then(response => response.json());
-//     this.fish = fish;
-
-//     const fishIds = fish.map(fish => fish.id),
-//       chipReqOpts = { method: 'POST', body: JSON.stringify({ fishIds }) };
-
-//     const chips = await fetch(this.chipsApiUrl, chipReqOpts).then(response => response.json());
-//     this.chips = chips;
-// }
+// export default await main();
