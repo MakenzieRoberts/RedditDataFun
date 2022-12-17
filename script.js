@@ -1,23 +1,14 @@
-// const feedDisplay = document.querySelector("#feed");
-
-// main();
-// const fetchButton = document.querySelector("#fetchButton");
 const loader = document.querySelector("#loader");
 const content = document.querySelector("#bubble-chart");
+
 addEventListener("DOMContentLoaded", async (event) => {
-	// fetchButton.onclick = async function () {
 	console.log(loader);
-	// content.innerHTML = "";
 
-	// Your loader styling, mine is just text that I display and hide
+	// Toggling the loading icon display, hiding it when the data is loaded.
 	loader.style.display = "block";
-	const nextContent = await fetchData();
+	const dataLoaded = await fetchData();
 	loader.style.display = "none";
-
-	// content.innerHTML = nextContent;
 });
-
-// Write a new promise
 
 function fetchData() {
 	return new Promise(async (resolve) => {
@@ -26,13 +17,15 @@ function fetchData() {
 	});
 }
 
-// bubbleChart();
 async function bubbleChart() {
+	// Here is where we call our logic functions that fetch and format the data behind the scenes.
 	let myData = await main();
 
 	let data = myData;
 
-	// const file = cat;
+	// Tutorial Credit: https://www.webtips.dev/how-to-make-interactive-bubble-charts-in-d3-js
+
+	// Bubble chart config
 	const width = window.innerWidth;
 	const height = window.innerHeight;
 	const colors = {
@@ -42,6 +35,7 @@ async function bubbleChart() {
 		"": "rgb(0, 178, 133)",
 	};
 
+	// Bubble chart generation
 	const generateChart = (data) => {
 		const bubble = (data) =>
 			d3.pack().size([width, height]).padding(2)(
@@ -116,29 +110,56 @@ async function bubbleChart() {
 			.style("opacity", 1);
 	};
 
+	// Calling the bubble chart generation function and passing my data to it.
 	generateChart(data);
 }
 
 async function main() {
+	// Get post data from r/ProgrammerHumor.json
 	const subredditData = await getSubredditData();
+
+	// Get unique authors from subreddit posts
 	const uniqueAuthors = getSubredditAuthors(subredditData);
+
+	// Fetch user activity from each unique author's profile
 	const userActivity = await getUserActivity(uniqueAuthors);
 
-	// const userSubreddits = getUserSubreddits(userActivity);
-
-	// {subreddit: "subreddit", username: "username", type: "type" }
+	/*
+	Format user activity data into an array of objects that can be easily counted. 
+	NSFW posts are also removed at this step. (This is a school project, after all...)
+	
+		Format: {subreddit: subreddit, username: username, type: type }
+	*/
 	const formattedActivity = formatUserActivity(userActivity);
+
+	/*
+	Remove duplicate entries (i.e. if a user has commented on a post and then posted to
+	the same subreddit), as to not skew the data. 
+	
+	In the future (past the scope of the project in the current time-frame) I intend
+	separate the data into two separate arrays, one for comments and one for posts, and
+	then display them on separate graphs or show the individual post/comment count on
+	hover.
+	*/
 	const dupesRemoved = removeDuplicates(formattedActivity);
 	console.log("calling dupesRemoved: ", dupesRemoved);
+
+	/*
+	Count and format data into an array of objects that can be used to create the bubble
+	chart.' Category is left empty at this time, but one day I intend to add a feature
+	that will utilize it. (In d3, category is used to color the bubbles, so I'm hoping in
+	the future I can find a way to color them based on the type of subreddit they are
+	(tech, gaming, memes, etc.) but I'm not sure where I'd get that data from yet.)
+
+		Format: {name: subreddit, category: "", score: count}
+	*/
 	const dataPoints = formatDataPoint(dupesRemoved);
+
+	/*
+	We return the dataPoints array so that we can use it in the bubble chart function.
+	This function is called inside the bubble chart generation function.
+	*/
 	return dataPoints;
-	// module.exports = { dataPoints };
-	//---
-	// const userSubredditsCount = countUserSubreddits(userSubreddits);
-	// console.log(userSubredditsCount);
-	//
-	// const userSubreddits = await getPostSubreddits(userActivity); // i dont think i need await here
-	// console.log("user subreddits(filtered)", userSubreddits);
 }
 
 async function getSubredditData() {
@@ -192,8 +213,6 @@ async function getUserActivity(uniqueAuthors) {
 	return allAsyncResults;
 }
 
-// Q: whats the difference between foreach and map?
-
 function formatUserActivity(userActivity) {
 	/*
 	[ 
@@ -217,10 +236,10 @@ function formatUserActivity(userActivity) {
 
 	userActivity.forEach((obj) => {
 		let user = obj.user;
-		// let filtered = removeNSFW(obj.rawUserActivity);
+
 		console.log("BEFORE NSFW REMOVAL:", obj);
 
-		// filter out data from nsfw subreddits
+		// Filter out data from NSFW subreddits
 		const subredditData = removeNSFW(obj);
 
 		subredditData.forEach((post) => {
@@ -237,16 +256,38 @@ function formatUserActivity(userActivity) {
 	return userSubreddits;
 }
 
-function removeDuplicates(arr) {
-	// Remove duplicates (I'm not interested in how much they've posted in each subreddit at this time, I just want to find out which subreddits they've posted/commented in)
+function removeNSFW(obj) {
+	let filteredData = obj.rawUserActivity.filter(checkNSFW);
 
-	// !IDEA: Later when counting I can individually count each comment/post and them add them together for the total. I can create a commentCount and postCount and use a simple if statement to add to each one depending on if type = t1/t3
-	// !REFERENCE: https://www.adamdehaven.com/blog/how-to-remove-duplicate-objects-from-a-javascript-array/#usage-example
+	function checkNSFW(post) {
+		if (post.data.over_18) console.log("NSFW POST:", post);
+		return post.data.over_18 === false;
+	}
+
+	return filteredData;
+}
+
+function removeDuplicates(arr) {
 	/**
 	 * Returns an array of objects with no duplicates
 	 * @param {Array} arr Array of Objects
 	 * @param {Array} keyProps Array of keys to determine uniqueness
 	 */
+	// Remove duplicates (I'm not interested in how much they've posted in each subreddit
+	// at this time, I just want to find out which subreddits they've posted/commented in)
+
+	// !IDEA: Later when counting I can individually count each comment/post and them add
+	// them together for the total. I can create a commentCount and postCount and use a
+	// simple if statement to add to each one depending on if type = t1/t3
+
+	// For the first stage of this project I'm not going to focus on whether or not the
+	// activity was a post or comment, so for now, if a user has both posted and commented
+	// in a subreddit, whichever is less recent will be removed as a duplicate. Although
+	// I'm not using the 'type' attribute yet, I'm going to keep it in the object for now,
+	// so later I can come back to this code and add the functionality to count posts and
+	// comments separately.
+
+	// !REFERENCE: https://www.adamdehaven.com/blog/how-to-remove-duplicate-objects-from-a-javascript-array/#usage-example
 	function getUniqueArray(arr, keyProps) {
 		return Object.values(
 			arr.reduce((uniqueMap, entry) => {
@@ -263,39 +304,8 @@ function removeDuplicates(arr) {
 }
 
 function formatDataPoint(dataArr) {
-	// !REFERENCE: https://stackoverflow.com/questions/5667888/counting-the-occurrences-frequency-of-array-elements
-	// Things i need to do
-	// 1. Count how many times each subreddit appears, (two counts 1 for comments 1 for posts) add them together and store that number in a variable
-	// 2. Each data point represents one subreddit.. so.. for every 'new' subreddit it comes across while iterating, it should check if a data point for it already exists and create a new one if it doesn't
+	// Counting Reference: https://stackoverflow.com/questions/5667888/counting-the-occurrences-frequency-of-array-elements
 
-	// let link = "https://www.reddit.com/r/" + subreddit;
-	// let dataPointArray = [];
-	// let singleDataPoint = {
-	// 	name: subreddit,
-	// 	category: username,
-	// 	score: count,
-	// 	link: link,
-	// };
-
-	// const arr = [5, 5, 5, 2, 2, 2, 2, 2, 9, 4];
-
-	// t1 for comment
-	// t3 for post
-	//--- separate t1/t3
-	// let commentCounts = {};
-	// let postCounts = {};
-
-	// for (const num of dupesRemoved) {
-	// 	if (num.type === "t1") {
-	// 		commentCounts[num.subreddit] = commentCounts[num.subreddit]
-	// 			? commentCounts[num.subreddit] + 1
-	// 			: 1;
-	// 	} else if (num.type === "t3") {
-	// 		postCounts[num.subreddit] = postCounts[num.subreddit]
-	// 			? postCounts[num.subreddit] + 1
-	// 			: 1;
-	// 	}
-	// }
 	let counts = {};
 	for (const data of dataArr) {
 		counts[data.subreddit] = counts[data.subreddit]
@@ -304,19 +314,6 @@ function formatDataPoint(dataArr) {
 	}
 
 	let dataPoints = [];
-	// for (const property in object) {
-	// 	let singleDataPoint = {
-	// 		name: Object.keys(count),
-	// 		category: "",
-	// 		score: count[count],
-	// 	};
-	// 	dataPoints.push(singleDataPoint);
-	// }
-	// console.log("commentCounts", commentCounts);
-	// console.log("postCounts", postCounts);
-
-	// //--
-	// const object = { a: 1, b: 2, c: 3 };
 
 	for (const property in counts) {
 		let singleDataPoint = {
@@ -325,96 +322,9 @@ function formatDataPoint(dataArr) {
 			score: counts[property],
 		};
 		dataPoints.push(singleDataPoint);
-		// console.log(`${property}: ${object[property]}`);
 	}
 
 	console.log("counts", counts);
 	console.log("dataPoints", dataPoints);
 	return dataPoints;
 }
-
-function removeNSFW(obj) {
-	let filteredData = obj.rawUserActivity.filter(checkNSFW);
-
-	function checkNSFW(post) {
-		if (post.data.over_18) console.log("NSFW POST:", post);
-		return post.data.over_18 === false;
-	}
-
-	return filteredData;
-}
-
-function createDataObject() {
-	let postdata = {
-		data: [],
-	};
-
-	let userActivityObj = new Object({
-		user: user,
-		posts: JSON.stringify(userData.data.children),
-	});
-	postdata.data.push(userActivityObj);
-}
-
-/*
-async function getPostSubreddits(userActivity) {
-	// Description:    Extracts the subreddit name from each post and returns an array of unique subreddits
-
-	// Parameter:      userActivity - object containing the user and their posts
-
-	// Returns:        Array(?) of unique subreddits
-	console.log("getPostSubreddits() userActivity: ", userActivity);
-
-	// const getSubreddits = (item) => console.log(item);
-	// const subreddits = userActivity.map(getSubreddits);
-
-	// console.log("subreddits:", subreddits);
-	const test = [];
-	userActivity.forEach((element) => {
-		let posts = element.posts;
-		console.log(posts);
-	});
-	// console.log("test", test);
-	// This foreach function will loop through each post of a user and get the subreddit name for each post
-	// ! Not working with the new object i made. hm. its working in foreach.js but with the object i created in foreach.js it doesnt work. maybe just use a regular old array of objects instead, with no name for the object
-
-	// userActivity.forEach(function (i) {
-	// 	console.log(i);
-	// 	const subreddits = userActivity.userActivity.map((post) => post.data.subreddit);
-	// 	console.log("SUBREDDITS", subreddits);
-	// 	//---
-	// 	// Use set to elimate duplicates, then convert back to an array
-	// 	// const uniqueSubreddits = Array.from([...new Set(subreddits)]);
-	// 	// console.log(`user: ${user}, subreddits: ${uniqueSubreddits}`);
-	// 	// const userSubredditsObj = {
-	// 	// 	user: user,
-	// 	// 	postSubreddits: uniqueSubreddits,
-	// 	// };
-	// 	//----
-	// 	// console.log(userSubredditsObj);
-	// 	// userActivity.forEach((post) => {
-	// 	// 	console.log(post.data.subreddit);
-	// 	//     const subreddit = post.data.subreddit;
-	// 	// 	const uniqueAuthors = Array.from([...new Set(authors)]);
-	// 	// });
-	// });
-}
-*/
-// (async () => {
-// 	// bunch of irrelevant code here
-
-// 	// gets all URLs, formatted & store in this variable
-// 	const dataPoints = formatDataPoint(dupesRemoved);
-// 	module.exports = { availableFormattedUrls };
-// })();
-
-// // module.exports = (async () => {
-// // 	return dataPoints;
-// // })();
-// // export default async () => {
-// // 	return await main();
-// // };
-
-// export default = { main };
-
-// export default await main();
