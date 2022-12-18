@@ -1,12 +1,24 @@
 const loader = document.querySelector("#loader");
 const content = document.querySelector("#bubble-chart");
+// Load-time Measurements
+// Before I make any performance improvements: Approx. 7579 - 9979 milliseconds
+// After locally-scoping unnecessary const variables:
 
 addEventListener("DOMContentLoaded", async (event) => {
-	console.log(loader);
+	// Timer Reference: https://techblog.constantcontact.com/software-development/measure-page-load-times-using-the-user-timing-api/
 
 	// Toggling the loading icon display, hiding it when the data is loaded.
 	loader.style.display = "block";
+
+	// Loading the data and timing how long it takes to load.
+	let startTime = window.performance.now();
 	const dataLoaded = await fetchData();
+	let endTime = window.performance.now();
+
+	console.log(
+		"Loading the chart took " + (endTime - startTime) + " milliseconds."
+	);
+
 	loader.style.display = "none";
 });
 
@@ -19,9 +31,7 @@ function fetchData() {
 
 async function bubbleChart() {
 	// Here is where we call our logic functions that fetch and format the data behind the scenes.
-	let myData = await main();
-
-	let data = myData;
+	const data = await main();
 
 	// Tutorial Credit: https://www.webtips.dev/how-to-make-interactive-bubble-charts-in-d3-js
 
@@ -196,7 +206,6 @@ async function getUserActivity(uniqueAuthors) {
 	// !IMPORTANT Make sure to only get subreddits where the user has posted, not comments. another function will handle comments
 	// !IMPORTANT Remember to put .CATCH statements in each fetch request!!
 	// !IMPORTANT I might be able to do multiple pages instead of getting just 25 results, we'll see. (also did user posts go from 26 ot 25? check how many posts are sent back)
-	let testing = [];
 
 	const allAsyncResults = [];
 
@@ -257,7 +266,7 @@ function formatUserActivity(userActivity) {
 }
 
 function removeNSFW(obj) {
-	let filteredData = obj.rawUserActivity.filter(checkNSFW);
+	const filteredData = obj.rawUserActivity.filter(checkNSFW);
 
 	function checkNSFW(post) {
 		if (post.data.over_18) console.log("NSFW POST:", post);
