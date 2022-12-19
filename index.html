@@ -5,27 +5,58 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>💭 Bubble chart with D3.js</title>
 
-		<link rel="stylesheet" href="./bubble-chart/styles.css" />
+		<link rel="stylesheet" href="./style.css" />
 	</head>
 	<body>
-		<div id="loader" style="display: none">
-			<!-- Loading animation credit: https://loading.io/css/ -->
-			<div class="lds-ring">
-				<div></div>
-				<div></div>
-				<div></div>
-				<div></div>
-			</div>
+		<div id="form-container">
+			<img
+				id="title-logo"
+				src="./images/title_logo.png"
+				alt="Reddit Data Visualizer"
+			/>
+			<p>Visualize user activity from recent posters in a subreddit.</p>
+			<span id="form-border">
+				<form id="subreddit-input-form">
+					<input
+						type="text"
+						name="write"
+						placeholder="Enter the name of a subreddit..."
+						pattern="^[a-zA-Z1234567890]+$"
+						title="No special characters or spaces allowed. Do not include /r/ in your input - Subreddit name only."
+					/>
+					<button id="form-button" type="submit" onsubmit="return false;">
+						Submit
+					</button>
+				</form>
+			</span>
+			<p id="error-msg" style="display: none">
+				<span style="color: red; font-size: 0.8em"
+					>ⓘ Trouble fetching subreddit data. <br />Subreddit is unavailable or
+					does not exist. </span
+				><br /><br />
+				Please try again with a different subreddit.
+			</p>
 		</div>
-		<svg id="bubble-chart"></svg>
-		<div class="tooltip">
-			<img alt="" />
-			<div>
-				<a></a>
-				<span></span>
+		<div id="chart-container">
+			<div id="loader" style="display: none">
+				<!-- Loading animation credit: https://loading.io/css/ -->
+				<div class="lds-ring">
+					<div></div>
+					<div></div>
+					<div></div>
+					<div></div>
+				</div>
+			</div>
+			<svg id="bubble-chart" style="display: none"></svg>
+			<div class="tooltip">
+				<div>
+					<a></a>
+					<span></span>
+				</div>
 			</div>
 		</div>
 		<script type="module" src="./script.js"></script>
 		<script src="https://d3js.org/d3.v6.js"></script>
 	</body>
+	<footer>Created by Makenzie Roberts</footer>
 </html>
