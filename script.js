@@ -53,7 +53,7 @@ async function handleSubredditFetch(userInput) {
 	try {
 		subredditData = await getSubredditData(userInput);
 		console.log(
-			"🚀 ~ file: script.js:30 ~ writeFrom.addEventListener ~ fetchTest",
+			"🚀 ~ file: script.js:55 ~ handleSubredditFetch ~ subredditData",
 			subredditData
 		);
 		// If a subreddit is unavailable, the API returns an error object. If that is the case, throw an error.
@@ -84,10 +84,10 @@ async function bubbleChart(chartData) {
 	// Bubble chart config
 	const width = window.innerWidth;
 	const height = window.innerHeight;
+
+	// Currently using the empty "category" key to set the color of all bubbles. I've set
+	// this up so color-coded categories can be more easily added in the future.
 	const colors = {
-		html: "#F16529",
-		css: "#1C88C7",
-		js: "#FCC700",
 		"": "rgb(0, 178, 133)",
 	};
 
@@ -336,8 +336,6 @@ function formatUserActivity(userActivity) {
 	userActivity.forEach((obj) => {
 		let user = obj.user;
 
-		console.log("BEFORE NSFW REMOVAL:", obj);
-
 		// Filter out data from NSFW subreddits
 		const subredditData = removeNSFW(obj);
 
@@ -364,7 +362,6 @@ function removeNSFW(obj) {
 	const filteredData = obj.rawUserActivity.filter(checkNSFW);
 
 	function checkNSFW(post) {
-		if (post.data.over_18) console.log("NSFW POST:", post);
 		return post.data.over_18 === false;
 	}
 
