@@ -65,7 +65,8 @@ text {
 }
 
 #chart-container {
-	padding-bottom: 24px;
+	padding-bottom: 32px;
+	height: fit-content;
 }
 circle {
 	cursor: pointer;
