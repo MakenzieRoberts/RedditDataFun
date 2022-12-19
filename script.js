@@ -4,10 +4,6 @@ const form = document.querySelector("#subreddit-input-form");
 const errorMsg = document.querySelector("#error-msg");
 const chartContainer = document.querySelector("#chart-container");
 const formButton = document.querySelector("#form-button");
-// Load-time Measurements
-// Before I make any performance improvements: Approx. 7579 - 9979 milliseconds
-
-// Instead of sending the user input paramter through all those functions, just get the data returned from main and then send that to the chart function. way more readable and easier to understand. Do it in the promise function and rename it to
 
 addEventListener("DOMContentLoaded", async (event) => {
 	form.addEventListener("submit", async (event) => {
