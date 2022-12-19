@@ -230,7 +230,7 @@ async function getSubredditData(userInput) {
 	    Description:   Fetch subreddit data from reddit.com/r/<userInput>.json
 	    Parameter:     The subreddit to fetch data from (user input)
 	    Returns:       Raw json data from the subreddit, or false if there is an error
-	 */
+	*/
 
 	let data = [];
 	data = await fetch(`https://www.reddit.com/r/${userInput}.json`)
@@ -266,7 +266,6 @@ function getSubredditAuthors(data) {
 	return uniqueAuthors;
 }
 
-// (?) Does this function need to be async? does the foreach need to be async?
 async function getUserActivity(uniqueAuthors) {
 	/*
 		Description:    Fetch's user data and extracts the posts.
@@ -412,6 +411,7 @@ function formatDataPoint(dataArr) {
 	    Parameter:     	Array of objects containing the subreddit, user, and type of post
 	    Returns:        An array of objects that can be used to create the chart - containing the subreddit, category, and score
 	*/
+
 	// Counting Reference: https://stackoverflow.com/questions/5667888/counting-the-occurrences-frequency-of-array-elements
 
 	let counts = {};
