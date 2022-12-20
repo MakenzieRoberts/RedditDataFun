@@ -8,3 +8,5 @@ This project allows a user to enter a subreddit name, and view a bubble chart of
 In the future I may integrate this project into a REST API, but for the current scope of this sprint I decided to focus on client-side only.
 
 To launch, I suggest using [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) for Visual Studio Code.
+
+  -- *Makenzie*
