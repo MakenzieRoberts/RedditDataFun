@@ -2,7 +2,7 @@
 
 ## Final Sprint | Reddit Data Visualization (Bubble Chart)
 
-[Project Board](https://github.com/users/MakenzieRoberts/projects/5) | [Figma Design](https://www.figma.com/file/SkCoYIfWPf1KgYofQt12aV/Reddit-Data-Visualizer?node-id=0%3A1&t=EMdnGp7vNECcQWLJ-1) | [CodeSandbox Demo](https://codesandbox.io/s/makenzie-roberts-reddit-visualizer-kxwpzj?file=/index.html)
+[Figma Design](https://www.figma.com/file/SkCoYIfWPf1KgYofQt12aV/Reddit-Data-Visualizer?node-id=0%3A1&t=EMdnGp7vNECcQWLJ-1) | [CodeSandbox Demo](https://codesandbox.io/s/makenzie-roberts-reddit-visualizer-kxwpzj?file=/index.html)
 
 
 
