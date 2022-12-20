@@ -106,7 +106,9 @@ async function bubbleChart(chartData) {
 			.attr("width", width) // Changed from .style to .attr for firefox compatibility
 			.attr("height", height); // Changed from .style to .attr for firefox compatibility
 
+		// Clearing the svg element to prevent duplicate bubbles.
 		svg.selectAll("*").remove();
+
 		const root = bubble(data);
 		const tooltip = d3.select(".tooltip");
 
