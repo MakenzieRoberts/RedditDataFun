@@ -1,3 +1,8 @@
+/* 
+	Author: 			Makenzie Roberts
+	Last Edited:		December 19, 2022 
+*/
+
 /* ********************************* General ******************************** */
 body {
 	margin: 0;
@@ -7,6 +12,7 @@ body {
 	justify-content: center;
 	/* align-content: center; */
 	background-color: rgb(225, 250, 247);
+	box-sizing: border-box;
 }
 
 p {

@@ -1,3 +1,6 @@
+// Author: 			Makenzie Roberts
+// Last Edited:		December 19, 2022
+
 const loader = document.querySelector("#loader");
 const chart = document.querySelector("#bubble-chart");
 const form = document.querySelector("#subreddit-input-form");
@@ -82,8 +85,8 @@ async function bubbleChart(chartData) {
 	// Tutorial Credit: https://www.webtips.dev/how-to-make-interactive-bubble-charts-in-d3-js
 
 	// Bubble chart config
-	const width = window.innerWidth;
-	const height = window.innerHeight;
+	const width = window.innerWidth * 0.95;
+	const height = window.innerHeight * 0.95;
 
 	// Currently using the empty "category" key to set the color of all bubbles. I've set
 	// this up so color-coded categories can be more easily added in the future.
@@ -118,6 +121,7 @@ async function bubbleChart(chartData) {
 			.append("circle")
 			.style("fill", (d) => colors[d.data.category])
 			.on("mouseover", function (e, d) {
+				// Tooltip code
 				tooltip.select("img").attr("src", d.data.img);
 				tooltip
 					.select("a")
@@ -196,10 +200,9 @@ async function main(fetchedSubredditData) {
 	Remove duplicate entries (i.e. if a user has commented on a post and then posted to
 	the same subreddit), as to not skew the data. 
 	
-	In the future (past the scope of the project in the current time-frame) I intend
-	separate the data into two separate arrays, one for comments and one for posts, and
-	then display them on separate graphs or show the individual post/comment count on
-	hover.
+	In the future (past the scope of the sprint) I intend separate the data into two
+	separate arrays, one for comments and one for posts, and then display them on separate
+	graphs or show the individual post/comment count on hover.
 	*/
 	const dupesRemoved = removeDuplicates(formattedActivity);
 

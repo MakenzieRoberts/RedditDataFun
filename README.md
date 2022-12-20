@@ -1,4 +1,5 @@
-# Semester 3 | Data Structures & Algorithms 
+# Semester 3 | Data Structures & Algorithms
+
 ## Final Sprint | Reddit Data Visualization (Bubble Chart)
 
 My goal for this project was to create something I'm passionate about while also gaining experience with client-side data manipulation and visualization.
