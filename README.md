@@ -1,10 +1,9 @@
-# Semester 3 | Data Structures & Algorithms
+# Reddit Data Visualization (Bubble Chart)
 
-## Final Sprint | Reddit Data Visualization (Bubble Chart)
+## Semester 3 | Data Structures & Algorithms | Final Sprint 
+
 
 [CodeSandbox Demo](https://codesandbox.io/s/makenzie-roberts-reddit-visualizer-kxwpzj?file=/index.html) | [Figma Design](https://www.figma.com/file/SkCoYIfWPf1KgYofQt12aV/Reddit-Data-Visualizer?node-id=0%3A1&t=EMdnGp7vNECcQWLJ-1) 
-
-
 
 
 My goal for this project was to create something I'm passionate about while also gaining experience with client-side data manipulation and visualization.
